@@ -19,10 +19,10 @@ def build_parser():
 
 
 def check_hash(password):
-    h = hashlib.sha1(password).hexdigest().upper()
+    h = hashlib.sha1(password.encode()).hexdigest().upper()
     hh = h[5:]
     for l in requests.get('https://api.pwnedpasswords.com/range/' + h[:5]).content.splitlines():
-        ll = l.split(':')
+        ll = l.decode().split(':')
         if hh == ll[0]:
             return int(ll[1])
     return 0
@@ -35,7 +35,7 @@ def main():
         for entry in kdb.obj_root.findall('.//Group/Entry'):
             uuid = entry.find('./UUID').text
             kv = {string.find('./Key').text: string.find('./Value').text for string in entry.findall('./String')}
-            if not kv['Password']:
+            if 'Password' not in kv or not kv['Password']:
                 continue
             r = check_hash(kv['Password'])
             if r > 0:
